@@ -19,6 +19,8 @@ import zipfile
 import pandas as pd
 from normalizer import normal
 from collections import Counter
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
 
 config = Path('/home/kirill/airflow/dags/logger.conf')
 logging.config.fileConfig(fname=config, disable_existing_loggers=False)
@@ -149,12 +151,24 @@ def skills(**kwargs):
         cursor.execute(tab_skills_top)
         connection.commit()
         logger.info('Таблица skills_top успешно добавлена в БД')
+        wb = Workbook()
+        ws = wb.active
+        ws.append(['Количество', 'Скилл'])
+        ft = Font(bold=True)
+        ws['A1'].font = ft
+        ws['A1'].alignment = Alignment(horizontal='center')
+        ws['B1'].font = ft
+        ws['B1'].alignment = Alignment(horizontal='center')
+        ws.column_dimensions['A'].width = 20
+        ws.column_dimensions['B'].width = 40
         for skill in c.most_common(10):
             cursor.execute(insert_skill, [skill[1], skill[0]])
+            ws.append([skill[1], skill[0]])
             logger.info(f"{str(skill[1]).rjust(2)} - {skill[0]}")
         connection.commit()
         logger.info('Данные успешно добавлены в таблицу skills_top')
         cursor.close()
+        wb.save('/home/kirill/skills.xlsx')
     except sql.Error as error:
         logger.critical("Не удалось выполнить запрос")
         logger.critical(f"Исключение: {error.__class__}, {error.args}")
@@ -170,20 +184,20 @@ with DAG(
     start_date=datetime(2023, 7, 22),
     schedule='@daily'
 ) as dag:
-    # download_egrul = BashOperator(
-    #     task_id='download_egrul',
-    #     bash_command=f"wget {egrul_web} -O {egrul_local}"
-    # )
+    download_egrul = BashOperator(
+        task_id='download_egrul',
+        bash_command=f"wget {egrul_web} -O {egrul_local}"
+    )
     load_telecoms = PythonOperator(
         task_id='load_telecoms',
         python_callable=telecoms,
     )
-    # get_vacancies = PythonOperator(
-    #     task_id='get_vacancies',
-    #     python_callable=vacancies,
-    # )
-    # top_skills = PythonOperator(
-    #     task_id='top_skills',
-    #     python_callable=skills,
-    # )
-    # download_egrul >> load_telecoms >> get_vacancies >> top_skills
+    get_vacancies = PythonOperator(
+        task_id='get_vacancies',
+        python_callable=vacancies,
+    )
+    top_skills = PythonOperator(
+        task_id='top_skills',
+        python_callable=skills,
+    )
+    download_egrul >> load_telecoms >> get_vacancies >> top_skills
