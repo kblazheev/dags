@@ -1,19 +1,6 @@
-okved_web = 'https://ofdata.ru/open-data/download/okved_2.json.zip'
-okved_local = '/home/kirill/okved_2.json.zip'
-okved_file = 'okved_2.json'
 egrul_web = 'https://ofdata.ru/open-data/download/egrul.json.zip'
 egrul_local = '/home/kirill/egrul.json.zip'
 db = 'hw3.db'
-tab_okved = '''
-    CREATE TABLE IF NOT EXISTS okved(
-        id integer primary key,
-        code text,
-        parent_code text,
-        section text,
-        name text,
-        comment text
-    );'''
-insert_okved = "INSERT INTO okved(code, parent_code, section, name, comment) VALUES(?, ?, ?, ?, ?);"
 tab_telecom = '''
     CREATE TABLE IF NOT EXISTS telecom_companies(
         id integer primary key,
@@ -43,7 +30,6 @@ tab_skills_top = '''
             );'''
 insert_skill = "INSERT INTO skills_top(count, name) VALUES(?, ?);"
 url = "https://api.hh.ru/vacancies"
-url2 = "https://hh.ru/search/vacancy"
 api_url = "https://api.hh.ru/"
 user_agent = {'User-agent': 'Mozilla/5.0'}
 url_params = {
