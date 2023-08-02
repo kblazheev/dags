@@ -1,0 +1,12 @@
+requests
+bs4
+lxml
+pandas
+aiohttp
+aiodns
+airflow
+asyncio
+sqlite3
+pathlib
+zipfile
+openpyxl
